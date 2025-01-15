@@ -1,0 +1,109 @@
+// C++ program for the cyber security management system for charging bills and the booking of the cyber cafe.................
+
+#include<iostream>
+using namespace std;
+int main() {
+    int choice, phoneno = 0, hrs = 0, bill = 0;
+    string name = "", password, Confirm;
+    bool bookingConfirmed = false;
+
+    cout << "===========================================================" << endl;
+    cout << "Welcome to Kshitij's and Kartik's Cyber cafe......." << endl;
+    cout << "===========================================================" << endl;
+    cout << "                     1.Booking" << endl;
+    cout << "===========================================================" << endl;
+    cout << "                     2.View Booking" << endl;
+    cout << "===========================================================" << endl;
+    cout << "                     3.Cancel Booking" << endl;
+    cout << "===========================================================" << endl;
+    cout << "                     4.Exit" << endl;
+    cout << "===========================================================" << endl;
+
+    do {
+        cout << "Enter your choice: {1,2,3,4} ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: {
+                cout << "Booking Section" << endl;
+                cout << "Enter your name: ";
+                cin >> name;
+                cout << "Enter your phone number: ";
+                cin >> phoneno;
+                cout << "Enter the number of hours you want to book for: ";
+                cin >> hrs;
+                bill = hrs * 50;
+                cout << "Your bill is: Rs" << bill << endl;
+                cout << "Do you want to confirm your booking? {yes(y)/no(n)} ";
+                cin >> Confirm;
+                if (Confirm == "yes" || Confirm == "y") {
+                    bookingConfirmed = true;
+                    cout << "Booking confirmed" << endl;
+                    cout << "Thanks for booking" << endl;
+                } else if (Confirm == "no" || Confirm == "n") {
+                    bookingConfirmed = false;
+                    cout << "Booking cancelled" << endl;
+                    cout << "Thanks for visiting" << endl;
+                } else {
+                    cout << "Invalid choice" << endl;
+                }
+                break;
+            }
+
+            case 2: {
+                cout << "View Booking Section" << endl;
+                if (bookingConfirmed) {
+                    cout << "=======================================" << endl;
+                    cout << "   Your booking details are: " << endl;
+                    cout << "=======================================" << endl;
+                    cout << "Name: " << name << endl;
+                    cout << "Phone number: " << phoneno << endl;
+                    cout << "Hours booked: " << hrs << endl;
+                    cout << "Bill: " << bill << endl;
+                } else {
+                    cout << "No booking found." << endl;
+                }
+                break;
+            }
+
+            case 3: {
+                cout << "Cancel Booking Section" << endl;
+                if (bookingConfirmed) {
+                    cout << "=======================================" << endl;
+                    cout << "   Your booking details are: " << endl;
+                    cout << "=======================================" << endl;
+                    cout << "Name: " << name << endl;
+                    cout << "Phone number: " << phoneno << endl;
+                    cout << "Hours booked: " << hrs << endl;
+                    cout << "Bill: " << bill << endl;
+                    cout << "=======================================" << endl;
+                    cout << "  Your Booking has been cancelled" << endl;
+                    cout << "=======================================" << endl;
+                    bookingConfirmed = false;
+                    name = "";
+                    phoneno = 0;
+                    hrs = 0;
+                    bill = 0;
+                } else {
+                    cout << "No booking found to cancel." << endl;
+                }
+                break;
+            }
+
+            case 4: {
+                cout << "Exit Section" << endl;
+                cout << "=======================================" << endl;
+                cout << "Thank you for visiting our Cyber Cafe!" << endl;
+                cout << "=======================================" << endl;
+                break;
+            }
+
+            default: {
+                cout << "Invalid choice. Please try again." << endl;
+                break;
+            }
+        }
+    } while (choice != 4);
+
+    return 0;
+}
