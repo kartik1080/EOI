@@ -1,109 +1,156 @@
-// C++ program for the cyber security management system for charging bills and the booking of the cyber cafe.................
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import ttk
+import mysql.connector
 
-#include<iostream>
-using namespace std;
-int main() {
-    int choice, phoneno = 0, hrs = 0, bill = 0;
-    string name = "", password, Confirm;
-    bool bookingConfirmed = false;
+class CyberCafeApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Kshitij's and Kartik's Cyber Cafe")
+        self.root.geometry("800x800")
+        self.root.configure(bg="#f0f0f0")  # Set background color for the main window
+        
+        # Database connection
+        self.db = mysql.connector.connect(
+            host="localhost",  # Adjust with your MySQL host if necessary
+            user="kartik",       # Your MySQL username
+            password="Kartik@19690",       # Your MySQL password
+            database="cyber_cafe"
+        )
+        self.cursor = self.db.cursor()
+        
+        # Variables
+        self.choice = 0
+        self.phoneno = ""
+        self.hrs = 0
+        self.bill = 0
+        self.name = ""
+        self.bookingConfirmed = False
+        self.booking_id = None
+        
+        # UI Elements
+        self.label_title = tk.Label(self.root, text="Welcome to Kshitij's and Kartik's Cyber Cafe", font=("Helvetica", 16, "bold"), bg="#4CAF50", fg="white")
+        self.label_title.pack(pady=20, fill=tk.X)
+        
+        self.frame_menu = tk.Frame(self.root, bg="#f0f0f0")
+        self.frame_menu.pack(pady=10)
+        
+        self.btn_booking = tk.Button(self.frame_menu, text="1. Booking", command=self.booking_section, font=("Helvetica", 12), bg="#4CAF50", fg="white", width=20, relief="solid")
+        self.btn_booking.grid(row=0, column=0, padx=10, pady=5)
+        
+        self.btn_view_booking = tk.Button(self.frame_menu, text="2. View Booking", command=self.view_booking, font=("Helvetica", 12), bg="#4CAF50", fg="white", width=20, relief="solid")
+        self.btn_view_booking.grid(row=1, column=0, padx=10, pady=5)
+        
+        self.btn_cancel_booking = tk.Button(self.frame_menu, text="3. Cancel Booking", command=self.cancel_booking, font=("Helvetica", 12), bg="#FF6347", fg="white", width=20, relief="solid")
+        self.btn_cancel_booking.grid(row=2, column=0, padx=10, pady=5)
+        
+        self.btn_exit = tk.Button(self.frame_menu, text="4. Exit", command=self.exit_app, font=("Helvetica", 12), bg="#FF6347", fg="white", width=20, relief="solid")
+        self.btn_exit.grid(row=3, column=0, padx=10, pady=5)
 
-    cout << "===========================================================" << endl;
-    cout << "Welcome to Kshitij's and Kartik's Cyber cafe......." << endl;
-    cout << "===========================================================" << endl;
-    cout << "                     1.Booking" << endl;
-    cout << "===========================================================" << endl;
-    cout << "                     2.View Booking" << endl;
-    cout << "===========================================================" << endl;
-    cout << "                     3.Cancel Booking" << endl;
-    cout << "===========================================================" << endl;
-    cout << "                     4.Exit" << endl;
-    cout << "===========================================================" << endl;
+    def booking_section(self):
+        self.clear_frame()
+        
+        self.label_name = tk.Label(self.root, text="Enter your name:", font=("Helvetica", 12), bg="#f0f0f0")
+        self.label_name.pack(pady=5)
+        self.entry_name = tk.Entry(self.root, font=("Helvetica", 12), width=30)
+        self.entry_name.pack(pady=5)
+        
+        self.label_phoneno = tk.Label(self.root, text="Enter your phone number:", font=("Helvetica", 12), bg="#f0f0f0")
+        self.label_phoneno.pack(pady=5)
+        self.entry_phoneno = tk.Entry(self.root, font=("Helvetica", 12), width=30)
+        self.entry_phoneno.pack(pady=5)
+        
+        self.label_hours = tk.Label(self.root, text="Enter hours to book:", font=("Helvetica", 12), bg="#f0f0f0")
+        self.label_hours.pack(pady=5)
+        self.entry_hours = tk.Entry(self.root, font=("Helvetica", 12), width=30)
+        self.entry_hours.pack(pady=5)
+        
+        self.btn_confirm = tk.Button(self.root, text="Confirm Booking", command=self.confirm_booking, font=("Helvetica", 12), bg="#4CAF50", fg="white", relief="solid")
+        self.btn_confirm.pack(pady=10)
+        
+    def confirm_booking(self):
+        self.name = self.entry_name.get()
+        self.phoneno = self.entry_phoneno.get()
+        self.hrs = int(self.entry_hours.get())
+        self.bill = self.hrs * 50
+        
+        confirmation = messagebox.askyesno("Confirm Booking", f"Your bill is Rs{self.bill}. Do you want to confirm?")
+        
+        if confirmation:
+            self.bookingConfirmed = True
+            # Insert booking into the database
+            self.cursor.execute("INSERT INTO bookings (name, phone_number, hours, bill, booking_confirmed) VALUES (%s, %s, %s, %s, %s)", 
+                                (self.name, self.phoneno, self.hrs, self.bill, True))
+            self.db.commit()
+            self.booking_id = self.cursor.lastrowid
+            messagebox.showinfo("Booking Confirmed", "Your booking has been confirmed. Thanks for booking!")
+            self.clear_frame()
+        else:
+            self.bookingConfirmed = False
+            messagebox.showinfo("Booking Cancelled", "Your booking has been cancelled. Thanks for visiting!")
+            self.clear_frame()
+    
+    def view_booking(self):
+        self.clear_frame()
+        
+        # Create a treeview to display booking data in tabular format
+        treeview = ttk.Treeview(self.root, columns=("ID", "Name", "Phone", "Hours", "Bill"), show="headings")
+        treeview.pack(pady=20, padx=20)
 
-    do {
-        cout << "Enter your choice: {1,2,3,4} ";
-        cin >> choice;
+        # Define column headings
+        treeview.heading("ID", text="Booking ID")
+        treeview.heading("Name", text="Name")
+        treeview.heading("Phone", text="Phone Number")
+        treeview.heading("Hours", text="Hours Booked")
+        treeview.heading("Bill", text="Bill (Rs)")
+        
+        # Set style for treeview
+        treeview.tag_configure('oddrow', background='#f9f9f9')
+        treeview.tag_configure('evenrow', background='#e9e9e9')
+        
+        # Fetch all booking details from the database
+        self.cursor.execute("SELECT * FROM bookings WHERE booking_confirmed = TRUE")
+        bookings = self.cursor.fetchall()
+        
+        if bookings:
+            # Insert each booking as a row in the table
+            for idx, booking in enumerate(bookings):
+                tag = 'oddrow' if idx % 2 == 0 else 'evenrow'  # Alternate row colors
+                treeview.insert("", "end", values=(booking[0], booking[1], booking[2], booking[3], booking[4]), tags=(tag,))
+        else:
+            messagebox.showinfo("No Bookings", "No confirmed bookings found.")
 
-        switch (choice) {
-            case 1: {
-                cout << "Booking Section" << endl;
-                cout << "Enter your name: ";
-                cin >> name;
-                cout << "Enter your phone number: ";
-                cin >> phoneno;
-                cout << "Enter the number of hours you want to book for: ";
-                cin >> hrs;
-                bill = hrs * 50;
-                cout << "Your bill is: Rs" << bill << endl;
-                cout << "Do you want to confirm your booking? {yes(y)/no(n)} ";
-                cin >> Confirm;
-                if (Confirm == "yes" || Confirm == "y") {
-                    bookingConfirmed = true;
-                    cout << "Booking confirmed" << endl;
-                    cout << "Thanks for booking" << endl;
-                } else if (Confirm == "no" || Confirm == "n") {
-                    bookingConfirmed = false;
-                    cout << "Booking cancelled" << endl;
-                    cout << "Thanks for visiting" << endl;
-                } else {
-                    cout << "Invalid choice" << endl;
-                }
-                break;
-            }
+    def cancel_booking(self):
+        self.clear_frame()
+        
+        if self.bookingConfirmed:
+            cancel_confirmation = messagebox.askyesno("Cancel Booking", "Are you sure you want to cancel the booking?")
+            
+            if cancel_confirmation:
+                # Update the database to cancel the booking
+                self.cursor.execute("UPDATE bookings SET booking_confirmed = %s WHERE id = %s", (False, self.booking_id))
+                self.db.commit()
+                self.bookingConfirmed = False
+                self.name = ""
+                self.phoneno = ""
+                self.hrs = 0
+                self.bill = 0
+                self.booking_id = None
+                messagebox.showinfo("Booking Cancelled", "Your booking has been cancelled.")
+                self.clear_frame()
+        else:
+            messagebox.showinfo("No Booking", "No booking found to cancel.")
+    
+    def exit_app(self):
+        self.db.close()
+        self.root.quit()
+    
+    def clear_frame(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+        self.__init__(self.root)
 
-            case 2: {
-                cout << "View Booking Section" << endl;
-                if (bookingConfirmed) {
-                    cout << "=======================================" << endl;
-                    cout << "   Your booking details are: " << endl;
-                    cout << "=======================================" << endl;
-                    cout << "Name: " << name << endl;
-                    cout << "Phone number: " << phoneno << endl;
-                    cout << "Hours booked: " << hrs << endl;
-                    cout << "Bill: " << bill << endl;
-                } else {
-                    cout << "No booking found." << endl;
-                }
-                break;
-            }
-
-            case 3: {
-                cout << "Cancel Booking Section" << endl;
-                if (bookingConfirmed) {
-                    cout << "=======================================" << endl;
-                    cout << "   Your booking details are: " << endl;
-                    cout << "=======================================" << endl;
-                    cout << "Name: " << name << endl;
-                    cout << "Phone number: " << phoneno << endl;
-                    cout << "Hours booked: " << hrs << endl;
-                    cout << "Bill: " << bill << endl;
-                    cout << "=======================================" << endl;
-                    cout << "  Your Booking has been cancelled" << endl;
-                    cout << "=======================================" << endl;
-                    bookingConfirmed = false;
-                    name = "";
-                    phoneno = 0;
-                    hrs = 0;
-                    bill = 0;
-                } else {
-                    cout << "No booking found to cancel." << endl;
-                }
-                break;
-            }
-
-            case 4: {
-                cout << "Exit Section" << endl;
-                cout << "=======================================" << endl;
-                cout << "Thank you for visiting our Cyber Cafe!" << endl;
-                cout << "=======================================" << endl;
-                break;
-            }
-
-            default: {
-                cout << "Invalid choice. Please try again." << endl;
-                break;
-            }
-        }
-    } while (choice != 4);
-
-    return 0;
-}
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = CyberCafeApp(root)
+    root.mainloop()
