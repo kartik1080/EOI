@@ -29,22 +29,27 @@ class CyberCafeApp:
         self.booking_id = None
         
         # UI Elements
-        self.label_title = tk.Label(self.root, text="Welcome to Kshitij's and Kartik's Cyber Cafe", font=("Helvetica", 16, "bold"), bg="#4CAF50", fg="white")
+        self.label_title = tk.Label(self.root, text="Welcome to Kshitij's and Kartik's Cyber Cafe", 
+                                    font=("Helvetica", 16, "bold"), bg="#4CAF50", fg="white")
         self.label_title.pack(pady=20, fill=tk.X)
         
         self.frame_menu = tk.Frame(self.root, bg="#f0f0f0")
         self.frame_menu.pack(pady=10)
         
-        self.btn_booking = tk.Button(self.frame_menu, text="1. Booking", command=self.booking_section, font=("Helvetica", 12), bg="#4CAF50", fg="white", width=20, relief="solid")
+        self.btn_booking = tk.Button(self.frame_menu, text="1. Booking", command=self.booking_section, 
+                                    font=("Helvetica", 12), bg="#4CAF50", fg="white", width=20, relief="solid")
         self.btn_booking.grid(row=0, column=0, padx=10, pady=5)
         
-        self.btn_view_booking = tk.Button(self.frame_menu, text="2. View Booking", command=self.view_booking, font=("Helvetica", 12), bg="#4CAF50", fg="white", width=20, relief="solid")
+        self.btn_view_booking = tk.Button(self.frame_menu, text="2. View Booking", 
+                                        command=self.view_booking, font=("Helvetica", 12), bg="#4CAF50", fg="white", width=20, relief="solid")
         self.btn_view_booking.grid(row=1, column=0, padx=10, pady=5)
         
-        self.btn_cancel_booking = tk.Button(self.frame_menu, text="3. Cancel Booking", command=self.cancel_booking, font=("Helvetica", 12), bg="#FF6347", fg="white", width=20, relief="solid")
+        self.btn_cancel_booking = tk.Button(self.frame_menu, text="3. Cancel Booking",
+                                        command=self.cancel_booking, font=("Helvetica", 12), bg="#FF6347", fg="white", width=20, relief="solid")
         self.btn_cancel_booking.grid(row=2, column=0, padx=10, pady=5)
         
-        self.btn_exit = tk.Button(self.frame_menu, text="4. Exit", command=self.exit_app, font=("Helvetica", 12), bg="#FF6347", fg="white", width=20, relief="solid")
+        self.btn_exit = tk.Button(self.frame_menu, text="4. Exit", command=self.exit_app, 
+                                    font=("Helvetica", 12), bg="#FF6347", fg="white", width=20, relief="solid")
         self.btn_exit.grid(row=3, column=0, padx=10, pady=5)
 
     def booking_section(self):
@@ -65,7 +70,8 @@ class CyberCafeApp:
         self.entry_hours = tk.Entry(self.root, font=("Helvetica", 12), width=30)
         self.entry_hours.pack(pady=5)
         
-        self.btn_confirm = tk.Button(self.root, text="Confirm Booking", command=self.confirm_booking, font=("Helvetica", 12), bg="#4CAF50", fg="white", relief="solid")
+        self.btn_confirm = tk.Button(self.root, text="Confirm Booking", command=self.confirm_booking, 
+                                    font=("Helvetica", 12), bg="#4CAF50", fg="white", relief="solid")
         self.btn_confirm.pack(pady=10)
         
     def confirm_booking(self):
@@ -79,7 +85,7 @@ class CyberCafeApp:
         if confirmation:
             self.bookingConfirmed = True
             # Insert booking into the database
-            self.cursor.execute("INSERT INTO bookings (name, phone_number, hours, bill, booking_confirmed) VALUES (%s, %s, %s, %s, %s)", 
+            self.cursor.execute("INSERT INTO bookings (name, phone_number, hours, bill, booking_confirmed) VALUES (%s, %s, %s, %s, %s)",    #  mysql connection
                                 (self.name, self.phoneno, self.hrs, self.bill, True))
             self.db.commit()
             self.booking_id = self.cursor.lastrowid
@@ -94,7 +100,7 @@ class CyberCafeApp:
         self.clear_frame()
         
         # Create a treeview to display booking data in tabular format
-        treeview = ttk.Treeview(self.root, columns=("ID", "Name", "Phone", "Hours", "Bill"), show="headings")
+        treeview = ttk.Treeview(self.root, columns=("ID", "Name", "Phone", "Hours", "Bill"), show="headings")       #sql connections
         treeview.pack(pady=20, padx=20)
 
         # Define column headings
@@ -109,41 +115,61 @@ class CyberCafeApp:
         treeview.tag_configure('evenrow', background='#e9e9e9')
         
         # Fetch all booking details from the database
-        self.cursor.execute("SELECT * FROM bookings WHERE booking_confirmed = TRUE")
+        self.cursor.execute("SELECT * FROM bookings WHERE booking_confirmed = TRUE")       #sql connection
         bookings = self.cursor.fetchall()
         
         if bookings:
             # Insert each booking as a row in the table
             for idx, booking in enumerate(bookings):
                 tag = 'oddrow' if idx % 2 == 0 else 'evenrow'  # Alternate row colors
-                treeview.insert("", "end", values=(booking[0], booking[1], booking[2], booking[3], booking[4]), tags=(tag,))
+                treeview.insert("", "end", values=(booking[0], booking[1], booking[2], booking[3], booking[4]), tags=(tag,))   #sql connection
         else:
             messagebox.showinfo("No Bookings", "No confirmed bookings found.")
 
     def cancel_booking(self):
         self.clear_frame()
         
-        if self.bookingConfirmed:
-            cancel_confirmation = messagebox.askyesno("Cancel Booking", "Are you sure you want to cancel the booking?")
+        # Fetch all confirmed bookings from the database
+        self.cursor.execute("SELECT * FROM bookings WHERE booking_confirmed = TRUE")            #mysql connection
+        bookings = self.cursor.fetchall()
+        
+        if bookings:
+            # Create a combobox to select a booking to cancel
+            self.label_select_booking = tk.Label(self.root, text="Select booking to cancel:", font=("Helvetica", 12), bg="#f0f0f0")
+            self.label_select_booking.pack(pady=5)
             
-            if cancel_confirmation:
-                # Update the database to cancel the booking
-                self.cursor.execute("UPDATE bookings SET booking_confirmed = %s WHERE id = %s", (False, self.booking_id))
-                self.db.commit()
-                self.bookingConfirmed = False
-                self.name = ""
-                self.phoneno = ""
-                self.hrs = 0
-                self.bill = 0
-                self.booking_id = None
-                messagebox.showinfo("Booking Cancelled", "Your booking has been cancelled.")
-                self.clear_frame()
+            # Create a list of booking names or IDs to display in the combobox
+            booking_options = [f"ID: {booking[0]}, Name: {booking[1]}" for booking in bookings]
+            self.selected_booking = ttk.Combobox(self.root, values=booking_options, font=("Helvetica", 12), width=40)
+            self.selected_booking.pack(pady=10)
+            
+            # Add a cancel button
+            self.btn_cancel_selected = tk.Button(self.root, text="Cancel Selected Booking", 
+                                                command=lambda: self.confirm_cancel(bookings), font=("Helvetica", 12), 
+                                                bg="#FF6347", fg="white", relief="solid")
+            self.btn_cancel_selected.pack(pady=10)
         else:
-            messagebox.showinfo("No Booking", "No booking found to cancel.")
+            messagebox.showinfo("No Bookings", "No confirmed bookings to cancel.")
     
+    def confirm_cancel(self, bookings):
+        selected_booking = self.selected_booking.get()
+        
+        # Find the selected booking ID from the selected option in the combobox
+        selected_booking_id = int(selected_booking.split(",")[0].split(":")[1].strip())
+        
+        # Ask for confirmation to cancel the selected booking
+        cancel_confirmation = messagebox.askyesno("Cancel Booking", f"Are you sure you want to cancel the booking with ID {selected_booking_id}?")         
+        
+        if cancel_confirmation:
+            # Update the database to cancel the booking
+            self.cursor.execute("UPDATE bookings SET booking_confirmed = %s WHERE id = %s", (False, selected_booking_id))       #sql connection
+            self.db.commit()
+            messagebox.showinfo("Booking Cancelled", f"Booking with ID {selected_booking_id} has been cancelled.")
+            self.clear_frame()
+
     def exit_app(self):
-        self.db.close()
-        self.root.quit()
+        self.db.close()                                  # sql Connection
+        self.root.quit()                                 #sql connection
     
     def clear_frame(self):
         for widget in self.root.winfo_children():
@@ -154,3 +180,5 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = CyberCafeApp(root)
     root.mainloop()
+
+
